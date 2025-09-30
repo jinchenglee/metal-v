@@ -26,7 +26,7 @@ metal-v/
 - `make all` - Build both targets
 - `make clean` - Clean build artifacts
 
-## Usage
+## Application Usage
 
 The application provides an interactive UART interface for reading memory addresses:
 
