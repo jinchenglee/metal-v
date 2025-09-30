@@ -8,14 +8,14 @@ LD = riscv-none-elf-ld
 OBJCOPY = riscv-none-elf-objcopy
 
 # Compiler flags
-CFLAGS = -march=rv64gc -mabi=lp64d -mcmodel=medany -fno-common -fno-builtin -fno-stack-protector -Wall -Wextra -O2 -g
+CFLAGS = -march=rv64gc -mabi=lp64d -mcmodel=medany -fno-common -fno-builtin -fno-stack-protector -Wall -Wextra -O2 -g -Iinclude
 ASFLAGS = -march=rv64gc -mabi=lp64d
 
 # Source files
-C_SOURCE = hello_readaddr.c
-K230_PLATFORM_SOURCE = k230_platform.c
-QEMU_PLATFORM_SOURCE = qemu_platform.c
-STARTUP_SOURCE = startup.s
+C_SOURCE = src/hello_readaddr.c
+K230_PLATFORM_SOURCE = src/k230/k230_platform.c
+QEMU_PLATFORM_SOURCE = src/qemu/qemu_platform.c
+STARTUP_SOURCE = src/qemu/startup.s
 
 # Object files
 C_OBJECT = hello_readaddr_c.o
@@ -23,8 +23,8 @@ K230_PLATFORM_OBJECT = k230_platform.o
 QEMU_PLATFORM_OBJECT = qemu_platform.o
 STARTUP_OBJECT = startup.o
 
-# Default target (K230)
-.DEFAULT_GOAL := k230
+# Default target (run_qemu)
+.DEFAULT_GOAL := run_qemu
 
 # K230 target
 k230: k230.bin
@@ -44,7 +44,7 @@ k230.bin: k230.elf
 
 k230.elf: $(C_OBJECT) $(K230_PLATFORM_OBJECT)
 	@echo "Linking K230 executable..."
-	$(LD) -m elf64lriscv -T k230.ld -nostdlib -static -o k230.elf $(C_OBJECT) $(K230_PLATFORM_OBJECT)
+	$(LD) -m elf64lriscv -T src/k230/k230.ld -nostdlib -static -o k230.elf $(C_OBJECT) $(K230_PLATFORM_OBJECT)
 
 # QEMU build
 qemu.bin: qemu.elf
@@ -55,7 +55,7 @@ qemu.bin: qemu.elf
 
 qemu.elf: $(STARTUP_OBJECT) qemu_hello_readaddr_c.o $(QEMU_PLATFORM_OBJECT)
 	@echo "Linking QEMU executable..."
-	$(LD) -m elf64lriscv -T qemu.ld -nostdlib -static -o qemu.elf $(STARTUP_OBJECT) qemu_hello_readaddr_c.o $(QEMU_PLATFORM_OBJECT)
+	$(LD) -m elf64lriscv -T src/qemu/qemu.ld -nostdlib -static -o qemu.elf $(STARTUP_OBJECT) qemu_hello_readaddr_c.o $(QEMU_PLATFORM_OBJECT)
 
 # Object file compilation
 $(C_OBJECT): $(C_SOURCE)
@@ -87,47 +87,26 @@ clean:
 	rm -f k230.bin qemu.bin
 	@echo "Clean complete!"
 
-# Clean only K230 files
-clean-k230:
-	@echo "Cleaning K230 files..."
-	rm -f $(K230_PLATFORM_OBJECT) k230.elf k230.bin
-	@echo "K230 clean complete!"
-
-# Clean only QEMU files
-clean-qemu:
-	@echo "Cleaning QEMU files..."
-	rm -f qemu_hello_readaddr_c.o $(QEMU_PLATFORM_OBJECT) qemu.elf qemu.bin
-	@echo "QEMU clean complete!"
-
-# Rebuild targets
-rebuild: clean all
-
-rebuild-k230: clean-k230 k230
-
-rebuild-qemu: clean-qemu qemu
+# Run QEMU target
+run_qemu: qemu
+	@echo "Running QEMU..."
+	qemu-system-riscv64 -machine virt -cpu rv64 -m 128M -nographic -kernel qemu.bin
 
 # Help target
 help:
 	@echo "Available targets:"
-	@echo "  k230       - Build K230 version (default)"
+	@echo "  run_qemu   - Build and run QEMU version (default)"
+	@echo "  k230       - Build K230 version"
 	@echo "  qemu       - Build QEMU version"
 	@echo "  all        - Build both versions"
 	@echo "  clean      - Clean all build files"
-	@echo "  clean-k230 - Clean only K230 build files"
-	@echo "  clean-qemu - Clean only QEMU build files"
-	@echo "  rebuild    - Clean and build both versions"
-	@echo "  rebuild-k230 - Clean and build K230 version"
-	@echo "  rebuild-qemu - Clean and build QEMU version"
 	@echo "  help       - Show this help message"
 	@echo ""
 	@echo "Examples:"
-	@echo "  make       - Build K230 version (default)"
+	@echo "  make       - Build and run QEMU version (default)"
 	@echo "  make k230  - Build K230 version"
 	@echo "  make qemu  - Build QEMU version"
 	@echo "  make all   - Build both versions"
-	@echo ""
-	@echo "Running with QEMU:"
-	@echo "  qemu-system-riscv64 -machine virt -cpu rv64 -m 128M -nographic -bios qemu.bin"
 
 # Phony targets
-.PHONY: all k230 qemu clean clean-k230 clean-qemu rebuild rebuild-k230 rebuild-qemu help
+.PHONY: all k230 qemu run_qemu clean help
