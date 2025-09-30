@@ -8,7 +8,9 @@ LD = riscv-none-elf-ld
 OBJCOPY = riscv-none-elf-objcopy
 
 # Compiler flags
-CFLAGS = -march=rv64gc -mabi=lp64d -mcmodel=medany -fno-common -fno-builtin -fno-stack-protector -Wall -Wextra -O2 -g -Iinclude
+BASE_CFLAGS = -march=rv64gc -mabi=lp64d -mcmodel=medany -fno-common -fno-builtin -fno-stack-protector -Wall -Wextra -O2 -g -Iinclude
+K230_CFLAGS = $(BASE_CFLAGS)
+QEMU_CFLAGS = $(BASE_CFLAGS) -DQEMU_TARGET
 ASFLAGS = -march=rv64gc -mabi=lp64d
 
 # Source files
@@ -18,7 +20,8 @@ QEMU_PLATFORM_SOURCE = src/qemu/qemu_platform.c
 STARTUP_SOURCE = src/qemu/startup.s
 
 # Object files
-C_OBJECT = hello_readaddr_c.o
+K230_C_OBJECT = k230_hello_readaddr_c.o
+QEMU_C_OBJECT = qemu_hello_readaddr_c.o
 K230_PLATFORM_OBJECT = k230_platform.o
 QEMU_PLATFORM_OBJECT = qemu_platform.o
 STARTUP_OBJECT = startup.o
@@ -42,9 +45,9 @@ k230.bin: k230.elf
 	@echo "K230 version compiled successfully!"
 	@echo "Binary: k230.bin"
 
-k230.elf: $(C_OBJECT) $(K230_PLATFORM_OBJECT)
+k230.elf: $(K230_C_OBJECT) $(K230_PLATFORM_OBJECT)
 	@echo "Linking K230 executable..."
-	$(LD) -m elf64lriscv -T src/k230/k230.ld -nostdlib -static -o k230.elf $(C_OBJECT) $(K230_PLATFORM_OBJECT)
+	$(LD) -m elf64lriscv -T src/k230/k230.ld -nostdlib -static -o k230.elf $(K230_C_OBJECT) $(K230_PLATFORM_OBJECT)
 
 # QEMU build
 qemu.bin: qemu.elf
@@ -53,27 +56,26 @@ qemu.bin: qemu.elf
 	@echo "QEMU version compiled successfully!"
 	@echo "Binary: qemu.bin"
 
-qemu.elf: $(STARTUP_OBJECT) qemu_hello_readaddr_c.o $(QEMU_PLATFORM_OBJECT)
+qemu.elf: $(STARTUP_OBJECT) $(QEMU_C_OBJECT) $(QEMU_PLATFORM_OBJECT)
 	@echo "Linking QEMU executable..."
-	$(LD) -m elf64lriscv -T src/qemu/qemu.ld -nostdlib -static -o qemu.elf $(STARTUP_OBJECT) qemu_hello_readaddr_c.o $(QEMU_PLATFORM_OBJECT)
+	$(LD) -m elf64lriscv -T src/qemu/qemu.ld -nostdlib -static -o qemu.elf $(STARTUP_OBJECT) $(QEMU_C_OBJECT) $(QEMU_PLATFORM_OBJECT)
 
 # Object file compilation
-$(C_OBJECT): $(C_SOURCE)
-	@echo "Compiling C source..."
-	$(CC) $(CFLAGS) -c $(C_SOURCE) -o $(C_OBJECT)
+$(K230_C_OBJECT): $(C_SOURCE)
+	@echo "Compiling C source for K230..."
+	$(CC) $(K230_CFLAGS) -c $(C_SOURCE) -o $(K230_C_OBJECT)
 
-# QEMU-specific C object (with QEMU_TARGET defined)
-qemu_hello_readaddr_c.o: $(C_SOURCE)
+$(QEMU_C_OBJECT): $(C_SOURCE)
 	@echo "Compiling C source for QEMU..."
-	$(CC) $(CFLAGS) -DQEMU_TARGET -c $(C_SOURCE) -o qemu_hello_readaddr_c.o
+	$(CC) $(QEMU_CFLAGS) -c $(C_SOURCE) -o $(QEMU_C_OBJECT)
 
 $(K230_PLATFORM_OBJECT): $(K230_PLATFORM_SOURCE)
 	@echo "Compiling K230 platform source..."
-	$(CC) $(CFLAGS) -c $(K230_PLATFORM_SOURCE) -o $(K230_PLATFORM_OBJECT)
+	$(CC) $(K230_CFLAGS) -c $(K230_PLATFORM_SOURCE) -o $(K230_PLATFORM_OBJECT)
 
 $(QEMU_PLATFORM_OBJECT): $(QEMU_PLATFORM_SOURCE)
 	@echo "Compiling QEMU platform source..."
-	$(CC) $(CFLAGS) -DQEMU_TARGET -c $(QEMU_PLATFORM_SOURCE) -o $(QEMU_PLATFORM_OBJECT)
+	$(CC) $(QEMU_CFLAGS) -c $(QEMU_PLATFORM_SOURCE) -o $(QEMU_PLATFORM_OBJECT)
 
 $(STARTUP_OBJECT): $(STARTUP_SOURCE)
 	@echo "Assembling startup code..."
@@ -82,7 +84,7 @@ $(STARTUP_OBJECT): $(STARTUP_SOURCE)
 # Clean targets
 clean:
 	@echo "Cleaning up..."
-	rm -f $(C_OBJECT) qemu_hello_readaddr_c.o $(K230_PLATFORM_OBJECT) $(QEMU_PLATFORM_OBJECT) $(STARTUP_OBJECT)
+	rm -f $(K230_C_OBJECT) $(QEMU_C_OBJECT) $(K230_PLATFORM_OBJECT) $(QEMU_PLATFORM_OBJECT) $(STARTUP_OBJECT)
 	rm -f k230.elf qemu.elf
 	rm -f k230.bin qemu.bin
 	@echo "Clean complete!"
