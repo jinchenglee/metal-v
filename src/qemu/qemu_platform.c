@@ -6,7 +6,7 @@ static const platform_config_t qemu_config = {
     .uart_base = 0x10000000,  // QEMU virt machine UART
     .uart_clock_freq = 10000000,  // 10MHz (typical QEMU frequency)
     .baud_rate = 115200,
-    .memory_base = 0x80200000,  // QEMU virt machine kernel load address
+    .memory_base = 0x80000000,  // QEMU virt machine M-mode firmware load address
     .memory_size = 128 * 1024 * 1024  // 128MB
 };
 

@@ -130,23 +130,23 @@ clean:
 
 
 
-# Run QEMU target (S-mode)
+# Run QEMU target (M-mode, no OpenSBI)
 run_qemu: qemu
-	@echo "Running QEMU in S-mode..."
-	qemu-system-riscv64 -machine virt -cpu rv64 -m 128M -nographic -kernel qemu.bin
+	@echo "Running QEMU in M-mode (bare metal, no OpenSBI)..."
+	qemu-system-riscv64 -machine virt -cpu rv64 -m 128M -nographic -bios qemu.bin
 
-# Run QEMU Zig target (S-mode)
+# Run QEMU Zig target (M-mode, no OpenSBI)
 run_qemu_zig: qemu_zig
-	@echo "Running QEMU Zig version in S-mode..."
-	qemu-system-riscv64 -machine virt -cpu rv64 -m 128M -nographic -kernel qemu_zig.bin
+	@echo "Running QEMU Zig version in M-mode (bare metal, no OpenSBI)..."
+	qemu-system-riscv64 -machine virt -cpu rv64 -m 128M -nographic -bios qemu_zig.bin
 
 
 
 # Help target
 help:
 	@echo "Available targets:"
-	@echo "  run_qemu              - Build and run QEMU version in S-mode (default)"
-	@echo "  run_qemu_zig          - Build and run QEMU Zig version in S-mode"
+	@echo "  run_qemu              - Build and run QEMU version in M-mode (default, no OpenSBI)"
+	@echo "  run_qemu_zig          - Build and run QEMU Zig version in M-mode (no OpenSBI)"
 	@echo "  k230                  - Build K230 version"
 	@echo "  qemu                  - Build QEMU version"
 	@echo "  qemu_zig              - Build QEMU Zig version"
