@@ -21,6 +21,10 @@ SECTIONS {
     *(.bss*)
     *(COMMON)
     __bss_end = .;
+    . = ALIGN(16);
+    _stack_bottom = .;
+    . = . + 0x2000;  /* 8KB stack */
+    _stack_top = .;
   } > dram_space
 }
 
