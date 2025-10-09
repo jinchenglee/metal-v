@@ -6,21 +6,19 @@ MEMORY {
 
 SECTIONS {
   .text : {
-    k230_hello_readaddr_c.o(.text.startup)
-    k230_hello_readaddr_c.o(.text)
-    k230_hello_readaddr_c.o(.rodata*)
-    k230_platform.o(.text)
-    k230_platform.o(.rodata*)
+    *(.text.startup)
+    *(.text)
+    *(.text.*)
+    *(.rodata*)
   } > dram_space
   
   .data : {
-    k230_hello_readaddr_c.o(.data*)
-    k230_platform.o(.data*)
+    *(.data*)
   } > dram_space
   
   .bss : {
-    k230_hello_readaddr_c.o(.bss*)
-    k230_platform.o(.bss*)
+    *(.bss*)
     *(COMMON)
   } > dram_space
 }
+
