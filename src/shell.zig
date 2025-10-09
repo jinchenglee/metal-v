@@ -1,10 +1,10 @@
+// Test the FULL command loop with parse and execute
 const c = @cImport({
     @cInclude("platform.h");
 });
-const parser = @import("cmd_parser.zig");
 const handler = @import("cmd_handler.zig");
+const parser = @import("cmd_parser.zig");
 
-// Print welcome banner
 fn printBanner() void {
     c.platform_uart_puts("\n");
     c.platform_uart_puts("========================================\n");
@@ -24,20 +24,14 @@ fn printBanner() void {
     c.platform_uart_puts("Type 'help' for available commands.\n\n");
 }
 
-// Print command prompt
 fn printPrompt() void {
     c.platform_uart_puts("metal-v> ");
 }
 
-// Main function
-export fn main() c_int {
-    // Initialize platform
-    c.platform_init(c.PLATFORM_QEMU);
-
-    // Initialize UART
+export fn main() noreturn {
+    // Use platform constant from C (TARGET_PLATFORM is defined in platform-specific C files)
+    c.platform_init(c.TARGET_PLATFORM);
     c.platform_uart_init();
-
-    // Initialize command handler system
     handler.init();
 
     // Print welcome banner
@@ -68,6 +62,4 @@ export fn main() c_int {
 
         c.platform_uart_puts("\n");
     }
-
-    return 0; // Never reached
 }

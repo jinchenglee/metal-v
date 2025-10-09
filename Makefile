@@ -11,6 +11,7 @@ ZIG_SHELL_MODULES = src/utils.zig src/cmd_parser.zig src/cmd_handler.zig
 QEMU_PLATFORM_SOURCE = src/qemu/qemu_platform.c
 K230_PLATFORM_SOURCE = src/k230/k230_platform.c
 QEMU_STARTUP = src/qemu/startup.s
+K230_STARTUP = src/k230/k230_startup.s
 QEMU_LINKER = src/qemu/qemu.ld
 K230_LINKER = src/k230/k230.ld
 
@@ -38,10 +39,10 @@ qemu_shell.bin: $(ZIG_SHELL_SOURCE) $(ZIG_SHELL_MODULES) $(QEMU_STARTUP) $(QEMU_
 	$(OBJCOPY) -O binary qemu_shell qemu_shell.bin
 	@echo "✓ QEMU shell built successfully: qemu_shell.bin"
 
-# K230 Zig Shell
-k230_shell.bin: $(ZIG_SHELL_SOURCE) $(ZIG_SHELL_MODULES) $(K230_LINKER) $(K230_PLATFORM_SOURCE)
-	@echo "Building K230 shell (Zig + C platform)..."
-	$(ZIG) build-exe $(ZIG_SHELL_SOURCE) \
+# K230 Zig Shell - MUST clear BSS for global variables
+k230_shell.bin: $(ZIG_SHELL_SOURCE) $(ZIG_SHELL_MODULES) $(K230_LINKER) $(K230_PLATFORM_SOURCE) $(K230_STARTUP)
+	@echo "Building K230 shell (Zig + C platform with BSS clearing)..."
+	$(ZIG) build-exe $(ZIG_SHELL_SOURCE) $(K230_STARTUP) \
 		-mcmodel=medium \
 		-target riscv64-freestanding-none \
 		-O ReleaseSmall \
@@ -49,7 +50,8 @@ k230_shell.bin: $(ZIG_SHELL_SOURCE) $(ZIG_SHELL_MODULES) $(K230_LINKER) $(K230_P
 		-T $(K230_LINKER) \
 		-I include \
 		--name k230_shell \
-		-- $(K230_PLATFORM_SOURCE)
+		-DK230_PLATFORM \
+		-cflags -DK230_TARGET -DK230_PLATFORM -- $(K230_PLATFORM_SOURCE)
 	@echo "Creating K230 binary..."
 	$(OBJCOPY) -O binary k230_shell k230_shell.bin
 	@echo "✓ K230 shell built successfully: k230_shell.bin"

@@ -23,6 +23,9 @@ typedef struct {
 void platform_init(platform_type_t platform);
 const platform_config_t* get_platform_config(void);
 
+// Target platform constant - defined in platform-specific C files
+extern const platform_type_t TARGET_PLATFORM;
+
 // Platform-specific UART functions
 void platform_uart_init(void);
 void platform_uart_putc(char c);

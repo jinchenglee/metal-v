@@ -1,5 +1,8 @@
 #include "platform.h"
 
+// QEMU Platform Type - exported for Zig to use
+const platform_type_t TARGET_PLATFORM = PLATFORM_QEMU;
+
 // QEMU platform configuration
 static const platform_config_t qemu_config = {
     .type = PLATFORM_QEMU,

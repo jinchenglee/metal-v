@@ -1,5 +1,8 @@
 #include "platform.h"
 
+// K230 Platform Type - exported for Zig to use
+const platform_type_t TARGET_PLATFORM = PLATFORM_K230;
+
 // K230 platform configuration
 static const platform_config_t k230_config = {
     .type = PLATFORM_K230,
