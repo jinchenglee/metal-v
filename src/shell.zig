@@ -37,6 +37,9 @@ export fn main() noreturn {
     // Print welcome banner
     printBanner();
 
+    // Verify indeed we are running RVV.
+    asm volatile ("vsetvli x0, x0, e8, m1, ta, ma");
+
     // Command buffer
     var cmd_buffer: [parser.MAX_COMMAND_LENGTH]u8 = undefined;
     var parsed: parser.ParsedCommand = undefined;

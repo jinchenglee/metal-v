@@ -12,7 +12,8 @@ _start:
     
     # Initialize mstatus
     # Set MPP (Machine Previous Privilege) to M-mode (11 in bits 12:11)
-    li t0, 0x1800  # MPP = 11 (M-mode)
+    # Set VS (Vector Status) to Initial (01 in bits 10:9) to enable vector extension
+    li t0, 0x1A00  # MPP = 11 (M-mode), VS = 01 (Initial)
     csrw mstatus, t0
     
     # Initialize stack pointer to a safe location

@@ -25,10 +25,11 @@ all: qemu k230
 
 # QEMU Zig Shell
 qemu_shell.bin: $(ZIG_SHELL_SOURCE) $(ZIG_SHELL_MODULES) $(QEMU_STARTUP) $(QEMU_LINKER) $(QEMU_PLATFORM_SOURCE)
-	@echo "Building QEMU shell (Zig + C platform)..."
+	@echo "Building QEMU shell (Zig + C platform with RVV)..."
 	$(ZIG) build-exe $(ZIG_SHELL_SOURCE) $(QEMU_STARTUP) \
 		-mcmodel=medium \
 		-target riscv64-freestanding-none \
+		-mcpu=baseline+v \
 		-O ReleaseSmall \
 		-fno-strip \
 		-T $(QEMU_LINKER) \
@@ -41,10 +42,11 @@ qemu_shell.bin: $(ZIG_SHELL_SOURCE) $(ZIG_SHELL_MODULES) $(QEMU_STARTUP) $(QEMU_
 
 # K230 Zig Shell - MUST clear BSS for global variables
 k230_shell.bin: $(ZIG_SHELL_SOURCE) $(ZIG_SHELL_MODULES) $(K230_LINKER) $(K230_PLATFORM_SOURCE) $(K230_STARTUP)
-	@echo "Building K230 shell (Zig + C platform with BSS clearing)..."
+	@echo "Building K230 shell (Zig + C platform with BSS clearing + RVV)..."
 	$(ZIG) build-exe $(ZIG_SHELL_SOURCE) $(K230_STARTUP) \
 		-mcmodel=medium \
 		-target riscv64-freestanding-none \
+		-mcpu=baseline+v \
 		-O ReleaseSmall \
 		-fno-strip \
 		-T $(K230_LINKER) \
@@ -58,10 +60,10 @@ k230_shell.bin: $(ZIG_SHELL_SOURCE) $(ZIG_SHELL_MODULES) $(K230_LINKER) $(K230_P
 
 # Run targets
 run_qemu: qemu
-	@echo "Running Metal-V shell in QEMU..."
+	@echo "Running Metal-V shell in QEMU with RVV support..."
 	@echo "Press Ctrl-A then X to exit"
 	@echo ""
-	qemu-system-riscv64 -machine virt -cpu rv64 -m 128M -nographic -bios qemu_shell.bin
+	qemu-system-riscv64 -machine virt -cpu rv64,v=true -m 128M -nographic -bios qemu_shell.bin
 
 
 # Clean target

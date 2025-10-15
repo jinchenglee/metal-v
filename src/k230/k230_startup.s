@@ -23,6 +23,11 @@ _start:
     li t0, 0x16e30c
     csrw 0x7c5, t0
     
+    # Enable vector extension in mstatus
+    # Set VS (Vector Status) to Initial (01 in bits 10:9)
+    li t0, 0x0600  # VS = 01 (Initial state - enables vector)
+    csrs mstatus, t0
+    
     # Setup trap vector
     la t0, trap_entry
     csrw mtvec, t0
